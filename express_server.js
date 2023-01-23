@@ -11,6 +11,15 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+app.get("/set", (req, res) => {
+  const a = 1;
+  res.send(`a = ${a}`);
+});
+
+app.get("/fetch", (req, res) => {
+  res.send(`a = ${a}`);
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
