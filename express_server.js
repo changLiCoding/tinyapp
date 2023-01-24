@@ -2,6 +2,17 @@ const express = require('express');
 const app = express();
 const PORT = 8080;
 
+const randomIDGenerate = (numberOfChar) => {
+  const template = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const results = [];
+  for (let i = 0; i < numberOfChar; i++) {
+    const randomIndex = Math.round(Math.random() * 62);
+    console.log(randomIndex);
+    results.push(template[randomIndex]);
+  }
+  return results.join('');
+};
+
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
