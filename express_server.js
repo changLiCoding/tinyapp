@@ -7,7 +7,6 @@ const randomIDGenerate = (numberOfChar) => {
   const results = [];
   for (let i = 0; i < numberOfChar; i++) {
     const randomIndex = Math.round(Math.random() * 62);
-    console.log(randomIndex);
     results.push(template[randomIndex]);
   }
   return results.join('');
@@ -36,7 +35,6 @@ app.get("/fetch", (req, res) => {
 });
 app.get("/urls", (req, res) => {
   const templateVars = {urls: urlDatabase};
-  console.log(templateVars);
   res.render("urls_index", templateVars);
 });
 
@@ -44,7 +42,6 @@ app.post('/urls', (req, res) => {
   const longURL = req.body.longURL;
   const id = randomIDGenerate(6);
   urlDatabase[id] = longURL;
-  console.log(urlDatabase);
   res.redirect(`/urls/${id}`);
 });
 
@@ -64,14 +61,21 @@ app.get("/urls.json", (req, res) => {
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  console.log(longURL);
   res.redirect(longURL);
 });
 
+app.post('/urls/:id/delete', (req, res) => {
+
+  const id = req.params.id;
+  console.log(urlDatabase[id]);
+  console.log(urlDatabase);
+  delete urlDatabase[id];
+  console.log(id);
+  res.redirect('/urls');
+});
 
 app.get('/urls/:id', (req, res) => {
   const templateVars = {urls: urlDatabase, id: req.params.id, longURL: urlDatabase[req.params.id]};
-  console.log(templateVars);
   res.render('urls_show', templateVars);
 });
 
