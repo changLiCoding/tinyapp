@@ -41,13 +41,17 @@ app.get("/urls", (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  //const longURL = req.body.longURL;
-  console.log(req.body);
-  res.send('OK');
+  const longURL = req.body.longURL;
+  const id = randomIDGenerate(6);
+  urlDatabase[id] = longURL;
+  console.log(urlDatabase);
+  res.redirect(`/urls/${id}`);
 });
+
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -57,6 +61,12 @@ app.get("/urls.json", (req, res) => {
 //  const varibleVars = {...urlDatabase};
 //  res.render('urls_index', varibleVars);
 //});
+app.get('/u/:id', (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+  console.log(longURL);
+  res.redirect(longURL);
+});
 
 
 app.get('/urls/:id', (req, res) => {
