@@ -40,7 +40,7 @@ app.get("/urls", (req, res) => {
 
 app.post('/urls', (req, res) => {
   const longURL = req.body.longURL;
-  const id = randomIDGenerate(6);
+  const id = randomIDGenerate(7);
   urlDatabase[id] = longURL;
   res.redirect(`/urls/${id}`);
 });
@@ -77,6 +77,14 @@ app.post('/urls/:id/delete', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const templateVars = {urls: urlDatabase, id: req.params.id, longURL: urlDatabase[req.params.id]};
   res.render('urls_show', templateVars);
+});
+
+app.post('/urls/:id', (req, res) => {
+  const id = req.params.id;
+  const newURL = `http://${req.body.longURL}`;
+  console.log(id, newURL);
+  urlDatabase[id] = newURL;
+  res.redirect(`/urls`);
 });
 
 app.get("/hello", (req, res) => {
