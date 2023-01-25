@@ -32,26 +32,33 @@ const users = {
   },
 };
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  'b2xVn2': {longURL: 'http://www.lighthouselabs.ca', shortURL: 'b2xVn2'},
+  '9sm5xK': {longURL: 'http://www.google.com', shortURL: '9sm5xK'}
 };
 
 app.get('/', (req, res) => {
-  console.log('Cookies: ', req.cookies.username);
 
   res.send('Hello World!');
 });
 
-
 app.get('/register', (req, res) => {
-  const templateVars = {username: req.cookies["username"]};
+  const userId = req.cookies["user_id"];
+  const templateVars = {user: users[userId]};
   res.render('urls_logForm', templateVars);
 });
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  console.log(email, password);
-  res.cookie('email', email).redirect('/urls');
+  const passwordConfirm = req.body.passwordConfirm;
+  const id = randomIDGenerate(12);
+  if (password === passwordConfirm) {
+    users[id] = {id, email, password};
+  } else {
+    res.redirect('/urls');
+  }
+  console.log(email, password, passwordConfirm);
+  console.log(users[id]);
+  res.cookie('user_id', id).redirect('/urls');
 });
 app.post('/login', (req, res) => {
   const username = req.body.username;
@@ -59,31 +66,25 @@ app.post('/login', (req, res) => {
   res.cookie('username', username).redirect('/urls');
 });
 app.post('/logout', (req, res) => {
-  res.clearCookie('username').redirect('/urls');
+  res.clearCookie('user_id').redirect('/urls');
 });
 
-app.get("/set", (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
-});
-
-app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
-});
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = {urls: urlDatabase, user: users[req.cookies["user_id"]]};
   res.render("urls_index", templateVars);
 });
 
 app.post('/urls', (req, res) => {
-  const longURL = req.body.longURL;
-  const id = randomIDGenerate(7);
-  urlDatabase[id] = longURL;
+  const longURL = `http://${req.body.longURL}`;
+  const id = randomIDGenerate(6);
+  urlDatabase[id] = {};
+  urlDatabase[id]['longURL'] = longURL;
+  urlDatabase[id]['shortURL'] = id;
   res.redirect(`/urls/${id}`);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = {username: req.cookies["username"]};
+  const templateVars = {user: users[req.cookies["user_id"]]};
   res.render("urls_new", templateVars);
 });
 
@@ -92,36 +93,33 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//app.get('/urls', (req, res) => {
-//  const varibleVars = {...urlDatabase};
-//  res.render('urls_index', varibleVars);
-//});
+
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
   res.redirect(longURL);
 });
 
 app.post('/urls/:id/delete', (req, res) => {
 
   const id = req.params.id;
-  console.log(urlDatabase[id]);
-  console.log(urlDatabase);
+
   delete urlDatabase[id];
   console.log(id);
   res.redirect('/urls');
 });
 
 app.get('/urls/:id', (req, res) => {
-  const templateVars = {urls: urlDatabase, id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"]};
+  const id = req.params.id;
+  const templateVars = {urls: urlDatabase, id, longURL: urlDatabase[id].longURL, user: users[req.cookies["user_id"]]};
   res.render('urls_show', templateVars);
 });
 
 app.post('/urls/:id', (req, res) => {
   const id = req.params.id;
   const newURL = `http://${req.body.longURL}`;
-  console.log(id, newURL);
-  urlDatabase[id] = newURL;
+  urlDatabase[id].longURL = newURL;
+  urlDatabase[id].shortURL = id;
   res.redirect(`/urls`);
 });
 
