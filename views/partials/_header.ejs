@@ -18,9 +18,16 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <% if(username) { %>
+      <form action="/logout" method="post">
+        <span>Logedin As: <%= username %></span>
+        <button class="btn btn-outline-info">logout</button>
+      </form>
+    <% } else { %>
     <form class="d-flex" role="search" method="POST" action="/login">
       <input class="form-control me-2" name="username" type="search" placeholder="Username" aria-label="Search">
       <button class="btn btn-primary" type="submit">LogIn</button>
-  </form>
+    </form>
+    <% } %>
   </nav>
 </header>
