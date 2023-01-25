@@ -24,10 +24,8 @@
         <button class="btn btn-outline-info">logout</button>
       </form>
     <% } else { %>
-    <form class="d-flex" role="search" method="POST" action="/login">
-      <input class="form-control me-2" name="username" type="search" placeholder="Username" aria-label="Search">
-      <button class="btn btn-primary" type="submit">LogIn</button>
-    </form>
+      <a href="/register" class="btn btn-primary btn-sm mr-1">Register</a>
+      <a href="/login" class="btn btn-info btn-sm ml-2 mr-1">login</a>
     <% } %>
   </nav>
 </header>

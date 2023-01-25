@@ -4,15 +4,6 @@ const PORT = 8080;
 const cookieParser = require('cookie-parser');
 
 
-const randomIDGenerate = (numberOfChar) => {
-  const template = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const results = [];
-  for (let i = 0; i < numberOfChar; i++) {
-    const randomIndex = Math.round(Math.random() * 62);
-    results.push(template[randomIndex]);
-  }
-  return results.join('');
-};
 
 app.set("view engine", "ejs");
 
@@ -35,6 +26,24 @@ const urlDatabase = {
   'b2xVn2': {longURL: 'http://www.lighthouselabs.ca', shortURL: 'b2xVn2'},
   '9sm5xK': {longURL: 'http://www.google.com', shortURL: '9sm5xK'}
 };
+const randomIDGenerate = (numberOfChar) => {
+  const template = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const results = [];
+  for (let i = 0; i < numberOfChar; i++) {
+    const randomIndex = Math.round(Math.random() * 62);
+    results.push(template[randomIndex]);
+  }
+  return results.join('');
+};
+
+const findUserByEmail = (email) => {
+  for (let id in users) {
+    if (users[id].email === email) {
+      return users[id];
+    }
+  }
+  return null;
+};
 
 app.get('/', (req, res) => {
 
@@ -51,22 +60,40 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   const passwordConfirm = req.body.passwordConfirm;
   const id = randomIDGenerate(12);
-  if (password === passwordConfirm) {
+  if (findUserByEmail(email)) return res.status(400).send('Wrong email and password input');
+  if (email === '' || password === '') {
+    res.status(400).send('Wrong email and password input');
+    return;
+  } else if (password === passwordConfirm && password.length !== 0) {
     users[id] = {id, email, password};
-  } else {
-    res.redirect('/urls');
+    res.cookie('user_id', id);
   }
   console.log(email, password, passwordConfirm);
   console.log(users[id]);
-  res.cookie('user_id', id).redirect('/urls');
+
+  res.status(200).redirect('/urls');
+});
+
+app.get('/login', (req, res) => {
+  let templateVars = {user: users[req.cookies["user_id"]]};
+  res.status(200).render('urls_login', templateVars);
 });
 app.post('/login', (req, res) => {
-  const username = req.body.username;
-  console.log(username);
-  res.cookie('username', username).redirect('/urls');
+  const password = req.body.password;
+  const email = req.body.email;
+  const user = findUserByEmail(email);
+  if (user === null) {
+    res.status(403).send('Email or password not mathch. Please try again. ');
+    return;
+  } else if (user.password !== password) {
+    res.status(403).send('Email or password not mathch. Please try again. ');
+    return;
+  } else {
+    res.status(200).cookie('user_id', user.id).redirect('/urls');
+  }
 });
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id').redirect('/urls');
+  res.clearCookie('user_id').redirect('/login');
 });
 
 app.get("/urls", (req, res) => {
