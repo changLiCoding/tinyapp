@@ -25,6 +25,12 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+app.post('/login', (req, res) => {
+  const username = req.body.username;
+  console.log(username);
+  res.cookie('username', username).redirect('/urls');
+});
+
 app.get("/set", (req, res) => {
   const a = 1;
   res.send(`a = ${a}`);
