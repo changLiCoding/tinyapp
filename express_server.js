@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080;
 const cookieParser = require('cookie-parser');
 
-
+const bcrypt = require('bcryptjs');
 
 app.set("view engine", "ejs");
 
@@ -79,13 +79,14 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   const passwordConfirm = req.body.passwordConfirm;
   const id = randomIDGenerate(12);
-  if (findUserByEmail(email)) return res.status(400).send('Wrong email and password input');
+  if (findUserByEmail(email)) return res.status(400).send('The email is not valid. ');
   if (email === '' || password === '') {
     const templateVars = {msg: 'Wrong email and password input', user: null};
     res.status(400).render('urls_errorHandle.ejs', templateVars);
     return;
   } else if (password === passwordConfirm && password.length !== 0) {
-    users[id] = {id, email, password};
+    const hashedPass = bcrypt.hashSync(password, 10);
+    users[id] = {id, email, password: hashedPass};
     res.cookie('user_id', id);
   }
 
@@ -107,7 +108,7 @@ app.post('/login', (req, res) => {
   if (user === null) {
     res.status(403).send('Email or password not mathch. Please try again. ');
     return;
-  } else if (user.password !== password) {
+  } else if (!bcrypt.compareSync(password, user.password)) {
     res.status(403).send('Email or password not mathch. Please try again. ');
     return;
   } else {
@@ -155,7 +156,7 @@ app.get("/urls/new", (req, res) => {
 
 
 app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+  res.json({...urlDatabase, ...users});
 });
 
 
@@ -184,7 +185,6 @@ app.post('/urls/:id/delete', (req, res) => {
     return;
   }
   delete urlDatabase[id];
-  console.log(id);
   res.redirect('/urls');
 });
 
