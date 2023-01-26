@@ -1,13 +1,20 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
-const cookieParser = require('cookie-parser');
 
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
+
+const {randomIDGenerate, findURLByUserId, findUserByEmail} = require('./utils/helperFnc');
+
 
 app.set("view engine", "ejs");
 
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['I am in love of all kinds of sea food! ']
+}));
+//app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const users = {
@@ -32,33 +39,7 @@ const urlDatabase = {
     userID: "aJ48lW",
   },
 };
-const randomIDGenerate = (numberOfChar) => {
-  const template = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const results = [];
-  for (let i = 0; i < numberOfChar; i++) {
-    const randomIndex = Math.round(Math.random() * 62);
-    results.push(template[randomIndex]);
-  }
-  return results.join('');
-};
 
-const findUserByEmail = (email) => {
-  for (let id in users) {
-    if (users[id].email === email) {
-      return users[id];
-    }
-  }
-  return null;
-};
-const findURLByUserId = (id) => {
-  const res = {};
-  for (let idOfURL in urlDatabase) {
-    if (urlDatabase[idOfURL].userID === id) {
-      res[idOfURL] = urlDatabase[idOfURL];
-    }
-  }
-  return res;
-};
 
 app.get('/', (req, res) => {
 
@@ -66,11 +47,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     res.redirect('/urls');
     return;
   }
-  const userId = req.cookies["user_id"];
+  const userId = req.session["user_id"];
   const templateVars = {user: users[userId]};
   res.render('urls_logForm', templateVars);
 });
@@ -79,7 +60,7 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   const passwordConfirm = req.body.passwordConfirm;
   const id = randomIDGenerate(12);
-  if (findUserByEmail(email)) return res.status(400).send('The email is not valid. ');
+  if (findUserByEmail(email, users)) return res.status(400).send('The email is not valid. ');
   if (email === '' || password === '') {
     const templateVars = {msg: 'Wrong email and password input', user: null};
     res.status(400).render('urls_errorHandle.ejs', templateVars);
@@ -87,24 +68,25 @@ app.post('/register', (req, res) => {
   } else if (password === passwordConfirm && password.length !== 0) {
     const hashedPass = bcrypt.hashSync(password, 10);
     users[id] = {id, email, password: hashedPass};
-    res.cookie('user_id', id);
+    //res.cookie('user_id', id);
+    req.session['user_id'] = id;
   }
 
   res.status(200).redirect('/urls');
 });
 
 app.get('/login', (req, res) => {
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     res.redirect('/urls');
     return;
   }
-  let templateVars = {user: users[req.cookies["user_id"]]};
+  let templateVars = {user: users[req.session["user_id"]]};
   res.status(200).render('urls_login', templateVars);
 });
 app.post('/login', (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(email, users);
   if (user === null) {
     res.status(403).send('Email or password not mathch. Please try again. ');
     return;
@@ -112,32 +94,34 @@ app.post('/login', (req, res) => {
     res.status(403).send('Email or password not mathch. Please try again. ');
     return;
   } else {
-    res.status(200).cookie('user_id', user.id).redirect('/urls');
+    req.session['user_id'] = user.id;
+    res.status(200).redirect('/urls');
   }
 });
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id').redirect('/login');
+  req.session = null;
+  res.redirect('/login');
 });
 
 app.get("/urls", (req, res) => {
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     const templateVars = {msg: 'Sorry you are not sign in yet. ', user: null};
     res.status(400).render('urls_errorHandle.ejs', templateVars);
     return;
   }
-  const user = users[req.cookies["user_id"]];
-  const urls = findURLByUserId(req.cookies["user_id"]);
+  const user = users[req.session["user_id"]];
+  const urls = findURLByUserId(req.session["user_id"], urlDatabase);
   const templateVars = {urls, user};
   res.render("urls_index", templateVars);
 });
 
 app.post('/urls', (req, res) => {
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     const longURL = `http://${req.body.longURL}`;
     const id = randomIDGenerate(6);
     urlDatabase[id] = {};
     urlDatabase[id]['longURL'] = longURL;
-    urlDatabase[id]['userID'] = req.cookies.user_id;
+    urlDatabase[id]['userID'] = req.session.user_id;
     res.redirect(`/urls/${id}`);
     return;
   } else {
@@ -146,11 +130,11 @@ app.post('/urls', (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     res.redirect('/login');
     return;
   }
-  const templateVars = {user: users[req.cookies["user_id"]]};
+  const templateVars = {user: users[req.session["user_id"]]};
   res.render("urls_new", templateVars);
 });
 
@@ -173,7 +157,7 @@ app.get('/u/:id', (req, res) => {
 app.post('/urls/:id/delete', (req, res) => {
 
   const id = req.params.id;
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   if (!urlDatabase[id]) {
     res.send('<html><h2>Sorry can not find this URL with the ID. </h2></html>');
     return;
@@ -189,7 +173,7 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 app.get('/urls/:id', (req, res) => {
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   const id = req.params.id;
   if (!urlDatabase[id]) {
     res.send('<html><h2>Sorry can not find this URL with the ID. </h2></html>');
@@ -207,7 +191,7 @@ app.get('/urls/:id', (req, res) => {
 });
 
 app.post('/urls/:id', (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   const id = req.params.id;
   if (!urlDatabase[id]) {
     res.send('<html><h2>Sorry can not find this URL with the ID. </h2></html>');
