@@ -23,8 +23,14 @@ const users = {
   },
 };
 const urlDatabase = {
-  'b2xVn2': {longURL: 'http://www.lighthouselabs.ca', shortURL: 'b2xVn2'},
-  '9sm5xK': {longURL: 'http://www.google.com', shortURL: '9sm5xK'}
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 const randomIDGenerate = (numberOfChar) => {
   const template = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -51,6 +57,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
+  if (req.cookies.user_id) {
+    res.redirect('/urls');
+    return;
+  }
   const userId = req.cookies["user_id"];
   const templateVars = {user: users[userId]};
   res.render('urls_logForm', templateVars);
@@ -75,6 +85,10 @@ app.post('/register', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+  if (req.cookies.user_id) {
+    res.redirect('/urls');
+    return;
+  }
   let templateVars = {user: users[req.cookies["user_id"]]};
   res.status(200).render('urls_login', templateVars);
 });
@@ -102,15 +116,24 @@ app.get("/urls", (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  const longURL = `http://${req.body.longURL}`;
-  const id = randomIDGenerate(6);
-  urlDatabase[id] = {};
-  urlDatabase[id]['longURL'] = longURL;
-  urlDatabase[id]['shortURL'] = id;
-  res.redirect(`/urls/${id}`);
+  if (req.cookies.user_id) {
+    const longURL = `http://${req.body.longURL}`;
+    const id = randomIDGenerate(6);
+    urlDatabase[id] = {};
+    urlDatabase[id]['longURL'] = longURL;
+    urlDatabase[id]['userID'] = req.cookies.user_id;
+    res.redirect(`/urls/${id}`);
+    return;
+  } else {
+    res.send('<html><h2>Sorry only login user gets privileges of creating new short URL</h2></html>');
+  }
 });
 
 app.get("/urls/new", (req, res) => {
+  if (!req.cookies.user_id) {
+    res.redirect('/login');
+    return;
+  }
   const templateVars = {user: users[req.cookies["user_id"]]};
   res.render("urls_new", templateVars);
 });
@@ -123,6 +146,10 @@ app.get("/urls.json", (req, res) => {
 
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
+  if (!urlDatabase[id]) {
+    res.send('<html><h2>Sorry no relevent ID was found in our database. </h2></html>');
+    return;
+  }
   const longURL = urlDatabase[id].longURL;
   res.redirect(longURL);
 });
@@ -143,10 +170,19 @@ app.get('/urls/:id', (req, res) => {
 });
 
 app.post('/urls/:id', (req, res) => {
+  const userID = req.cookies.user_id;
   const id = req.params.id;
+  if (!userID) {
+    res.redirect('/login');
+    return;
+  } else if (userID === urlDatabase[id].userID) {
+    res.send('<html><h2>Sorry you have no permision of changing the URL. </h2></html>');
+    return;
+  }
   const newURL = `http://${req.body.longURL}`;
+  urlDatabase[id].userID = userID;
   urlDatabase[id].longURL = newURL;
-  urlDatabase[id].shortURL = id;
+  //urlDatabase[id].shortURL = id;
   res.redirect(`/urls`);
 });
 
