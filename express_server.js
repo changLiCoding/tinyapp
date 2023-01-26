@@ -50,6 +50,15 @@ const findUserByEmail = (email) => {
   }
   return null;
 };
+const findURLByUserId = (id) => {
+  const res = {};
+  for (let idOfURL in urlDatabase) {
+    if (urlDatabase[idOfURL].userID === id) {
+      res[idOfURL] = urlDatabase[idOfURL];
+    }
+  }
+  return res;
+};
 
 app.get('/', (req, res) => {
 
@@ -72,14 +81,13 @@ app.post('/register', (req, res) => {
   const id = randomIDGenerate(12);
   if (findUserByEmail(email)) return res.status(400).send('Wrong email and password input');
   if (email === '' || password === '') {
-    res.status(400).send('Wrong email and password input');
+    const templateVars = {msg: 'Wrong email and password input', user: null};
+    res.status(400).render('urls_errorHandle.ejs', templateVars);
     return;
   } else if (password === passwordConfirm && password.length !== 0) {
     users[id] = {id, email, password};
     res.cookie('user_id', id);
   }
-  console.log(email, password, passwordConfirm);
-  console.log(users[id]);
 
   res.status(200).redirect('/urls');
 });
@@ -111,7 +119,14 @@ app.post('/logout', (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase, user: users[req.cookies["user_id"]]};
+  if (!req.cookies.user_id) {
+    const templateVars = {msg: 'Sorry you are not sign in yet. ', user: null};
+    res.status(400).render('urls_errorHandle.ejs', templateVars);
+    return;
+  }
+  const user = users[req.cookies["user_id"]];
+  const urls = findURLByUserId(req.cookies["user_id"]);
+  const templateVars = {urls, user};
   res.render("urls_index", templateVars);
 });
 
@@ -157,32 +172,56 @@ app.get('/u/:id', (req, res) => {
 app.post('/urls/:id/delete', (req, res) => {
 
   const id = req.params.id;
-
+  const userID = req.cookies.user_id;
+  if (!urlDatabase[id]) {
+    res.send('<html><h2>Sorry can not find this URL with the ID. </h2></html>');
+    return;
+  } else if (!userID) {
+    res.redirect('/login');
+    return;
+  } else if (userID !== urlDatabase[id].userID) {
+    res.send('<html><h2>Sorry you have no permision of changing the URL. </h2></html>');
+    return;
+  }
   delete urlDatabase[id];
   console.log(id);
   res.redirect('/urls');
 });
 
 app.get('/urls/:id', (req, res) => {
+  const userId = req.cookies.user_id;
   const id = req.params.id;
-  const templateVars = {urls: urlDatabase, id, longURL: urlDatabase[id].longURL, user: users[req.cookies["user_id"]]};
+  if (!urlDatabase[id]) {
+    res.send('<html><h2>Sorry can not find this URL with the ID. </h2></html>');
+    return;
+  }
+  if (!userId) {
+    res.send('<html><h2>Sorry only login user gets privileges of reviewing short URLs</h2></html>');
+    return;
+  } else if (urlDatabase[id].userID !== userId) {
+    res.send('<html><h2>Sorry you are not the owner of this URL</h2></html>');
+    return;
+  }
+  const templateVars = { id, longURL: urlDatabase[id].longURL, user: users[userId]};
   res.render('urls_show', templateVars);
 });
 
 app.post('/urls/:id', (req, res) => {
   const userID = req.cookies.user_id;
   const id = req.params.id;
-  if (!userID) {
+  if (!urlDatabase[id]) {
+    res.send('<html><h2>Sorry can not find this URL with the ID. </h2></html>');
+    return;
+  } else if (!userID) {
     res.redirect('/login');
     return;
-  } else if (userID === urlDatabase[id].userID) {
+  } else if (userID !== urlDatabase[id].userID) {
     res.send('<html><h2>Sorry you have no permision of changing the URL. </h2></html>');
     return;
   }
   const newURL = `http://${req.body.longURL}`;
   urlDatabase[id].userID = userID;
   urlDatabase[id].longURL = newURL;
-  //urlDatabase[id].shortURL = id;
   res.redirect(`/urls`);
 });
 
