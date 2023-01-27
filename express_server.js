@@ -1,44 +1,28 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
+const methodOverride = require('method-override');
 
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 
-const {randomIDGenerate, findURLByUserId, findUserByEmail} = require('./utils/helperFnc');
-
+const {randomIDGenerate, findURLByUserId, findUserByEmail, getUserVisitById} = require('./utils/helperFnc');
+const urlDatabase = require('./database/urldatabase');
+const users = require('./database/users');
 
 app.set("view engine", "ejs");
-
+// All Middleware
 app.use(cookieSession({
   name: 'session',
   keys: ['I am in love of all kinds of sea food! ']
 }));
 //app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
+
+
+
 
 
 app.get('/', (req, res) => {
@@ -99,7 +83,7 @@ app.post('/login', (req, res) => {
     res.status(200).redirect('/urls');
   }
 });
-app.post('/logout', (req, res) => {
+app.delete('/logout', (req, res) => {
   req.session = null;
   res.redirect('/login');
 });
@@ -120,9 +104,8 @@ app.post('/urls', (req, res) => {
   if (req.session.user_id) {
     const longURL = req.body.longURL.startsWith('http://') ? req.body.longURL : `http://${req.body.longURL}`;
     const id = randomIDGenerate(6);
-    urlDatabase[id] = {};
-    urlDatabase[id]['longURL'] = longURL;
-    urlDatabase[id]['userID'] = req.session.user_id;
+    urlDatabase[id] = {longURL, userID: req.session.user_id, visitedCount: 0, visitedUser: [] };
+
     res.redirect(`/urls/${id}`);
     return;
   } else {
@@ -151,7 +134,10 @@ app.get('/u/:id', (req, res) => {
     res.send('<html><h2>Sorry no relevent ID was found in our database. </h2></html>');
     return;
   }
+  const userId = req.session['user_id'];
   const longURL = urlDatabase[id].longURL;
+
+  getUserVisitById(userId, id);
   res.redirect(longURL);
 });
 
@@ -187,11 +173,13 @@ app.get('/urls/:id', (req, res) => {
     res.send('<html><h2>Sorry you are not the owner of this URL</h2></html>');
     return;
   }
-  const templateVars = { id, longURL: urlDatabase[id].longURL, user: users[userId]};
+  urlDatabase[id].visitedCount++;
+  const {visitedCount, visitedUser} = urlDatabase[id];
+  const templateVars = { id, longURL: urlDatabase[id].longURL, visitedCount, visitedUser, user: users[userId]};
   res.render('urls_show', templateVars);
 });
 
-app.post('/urls/:id', (req, res) => {
+app.put('/urls/:id', (req, res) => {
   const userID = req.session.user_id;
   const id = req.params.id;
   if (!urlDatabase[id]) {

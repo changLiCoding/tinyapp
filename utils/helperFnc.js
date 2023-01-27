@@ -1,6 +1,6 @@
+const urlDatabase = require('../database/urldatabase');
 
-
-const randomIDGenerate=(numberOfChar) => {
+const randomIDGenerate = (numberOfChar) => {
   const template = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const results = [];
   for (let i = 0; i < numberOfChar; i++) {
@@ -29,4 +29,18 @@ const findURLByUserId = (id, db) => {
   return res;
 };
 
-module.exports = {randomIDGenerate, findURLByUserId, findUserByEmail};
+const getUserVisitById = (userId, urlId) => {
+  let isFound = false;
+  urlDatabase[urlId].visitedUser.forEach(visitor => {
+    if (visitor['userId'] === userId) {
+      visitor.count++;
+      isFound = true;
+    }
+  });
+  if (isFound === false) {
+    urlDatabase[urlId].visitedUser.push({userId, count: 1});
+  }
+};
+
+module.exports = {randomIDGenerate, findURLByUserId, findUserByEmail, getUserVisitById
+};

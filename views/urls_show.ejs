@@ -8,6 +8,7 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
+    <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAD6/v0AAAAAAP7//wAJCQkA+Pz8APr8/AD8/v4A8/T0APn+/QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmYkZmZmZmZmZmMWZmZmZmZmZoFmZmZmZmZmYBZmZmZmYXYmFmZmZmZhZRYmZmZmZmZmFmJmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" rel="icon" type="image/x-icon" />
     <title>URL - TinyApp Example</title>
   </head>
 
@@ -22,10 +23,21 @@
             <p class="card-text">
               Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
             </p>
+            <p class="card-text">
+              Total Visited Count: <%= visitedCount %>
+            </p>
+            <% if(visitedUser) {%>
+              <% for (visitor of visitedUser) { %>
+                <p class="card-text">
+                  Visitor ID: <%= visitor.userId %> ||
+                  Visited Count: <%= visitor.count %>
+                </p>
+              <% } %>
+            <% } %>
 
           </div>
           <div class="card-footer d-flex justify-content-center text-muted">
-            <form method="POST" action=<%= `/urls/${id}` %>>
+            <form method="POST" action=<%= `/urls/${id}?_method=PUT` %>>
               <h3>Edit</h3>
               <div class="input-group container container-sm mb-3">
                 <span class="input-group-text" id="basic-addon3">https://</span>
