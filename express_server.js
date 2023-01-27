@@ -19,11 +19,11 @@ app.use(cookieSession({
 //app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
-
-
-
-
-
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  req.userId = req.session.user_id;
+  next();
+});
 
 app.get('/', (req, res) => {
   const userId = req.session["user_id"];

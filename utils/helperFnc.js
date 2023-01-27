@@ -34,11 +34,13 @@ const getUserVisitById = (userId, urlId) => {
   urlDatabase[urlId].visitedUser.forEach(visitor => {
     if (visitor['userId'] === userId) {
       visitor.count++;
+      const timeNow = new Date().toISOString();
+      visitor.timeStamps.push(timeNow);
       isFound = true;
     }
   });
   if (isFound === false) {
-    urlDatabase[urlId].visitedUser.push({userId, count: 1});
+    urlDatabase[urlId].visitedUser.push({userId, count: 1, timeStamps: [new Date().toISOString()]});
   }
 };
 

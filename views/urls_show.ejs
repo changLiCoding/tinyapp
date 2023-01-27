@@ -30,7 +30,11 @@
               <% for (visitor of visitedUser) { %>
                 <p class="card-text">
                   Visitor ID: <%= visitor.userId %> ||
-                  Visited Count: <%= visitor.count %>
+                  Visited Count: <%= visitor.count %> ||
+                  Timestamp:
+                  <% for (time of visitor.timeStamps) { %>
+                    <span><%= time %></span>
+                  <% } %>
                 </p>
               <% } %>
             <% } %>
