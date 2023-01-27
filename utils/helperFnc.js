@@ -1,4 +1,6 @@
-const randomIDGenerate = (numberOfChar) => {
+
+
+const randomIDGenerate=(numberOfChar) => {
   const template = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const results = [];
   for (let i = 0; i < numberOfChar; i++) {
@@ -16,6 +18,7 @@ const findUserByEmail = (email, db) => {
   }
   return null;
 };
+//Find relevant URLs with their owner, by owner's ID
 const findURLByUserId = (id, db) => {
   const res = {};
   for (let idOfURL in db) {

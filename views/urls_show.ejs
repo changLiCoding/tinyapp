@@ -12,33 +12,37 @@
   </head>
 
   <body>
-    <%- include('partials/_header') %>
+    <div class="d-flex flex-column min-vh-100">
+      <%- include('partials/_header') %>
+      <main class="flex-fill">
+        <div class="card text-center">
+          <div class="card-header"></div>
+          <div class="card-body">
+            <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+            <p class="card-text">
+              Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
+            </p>
 
-    <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">
-          Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
-        </p>
-
-      </div>
-      <div class="card-footer d-flex justify-content-center text-muted">
-        <form method="POST" action=<%= `/urls/${id}` %>>
-          <h3>Edit</h3>
-          <div class="input-group container container-sm mb-3">
-            <span class="input-group-text" id="basic-addon3">https://</span>
-            <input type="text"
-              name="longURL"
-              class="form-control"
-              placeholder="New URL Here"
-              aria-label="New URL"
-              aria-describedby="button-addon2"
-            >
-            <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Submit</button>
           </div>
-        </form>
-      </div>
+          <div class="card-footer d-flex justify-content-center text-muted">
+            <form method="POST" action=<%= `/urls/${id}` %>>
+              <h3>Edit</h3>
+              <div class="input-group container container-sm mb-3">
+                <span class="input-group-text" id="basic-addon3">https://</span>
+                <input type="text"
+                  name="longURL"
+                  class="form-control"
+                  placeholder="New URL Here"
+                  aria-label="New URL"
+                  aria-describedby="button-addon2"
+                >
+                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Submit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+      <%- include('partials/_footer') %>
     </div>
     <!-- Bootstrap JS -->
     <script

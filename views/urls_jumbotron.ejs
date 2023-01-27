@@ -8,39 +8,34 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
+    <style>
+    </style>
     <title>URL - TinyApp Example</title>
   </head>
   <body>
     <div class="d-flex flex-column min-vh-100">
       <%- include('partials/_header') %>
       <main class="flex-fill">
-        <div class="container container-sm mt-5">
-          <div class="container container-sm mt-5 pl-5">
-            <h3>Welcome Back and Sign In!! </h3>
-            <form class="mb-3" method="post" action="/login">
-              <div class="mb-3">
-                <label for="exampleInputEmail1" class="form-label">Email address</label>
-                <input type="email" name="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-              </div>
-              <div class="mb-3">
-                <label for="exampleInputPassword1" class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" id="exampleInputPassword1">
-              </div>
-
-              <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                <label class="form-check-label" for="exampleCheck1">Check me out</label>
-              </div>
-              <button type="submit" class="btn btn-primary">LogIn</button>
-            </form>
+        <div class="container mt-3 container-sm mt-5 ">
+          <div class="jumbotron text-white" style="background-image: url('https://cdn.pixabay.com/photo/2015/12/03/08/50/paper-1074131_1280.jpg');
+          height: 100%;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-size: cover;">
+            <h1 class="display-4">Hello User!</h1>
+            <p class="lead">This is a simple app for keeping websites organized and kept in database as short URL </p>
+            <hr class="my-4">
+            <p class="text-light">Register as user now and you can enjoy free websites organized database. </p>
+            <a class="btn btn-primary btn-lg" href="/register" role="button">Sign Up!!</a>
           </div>
         </div>
       </main>
+
     <%- include('partials/_footer') %>
     </div>
-  </body>
-  <!-- Bootstrap JS -->
+
+
+    <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"

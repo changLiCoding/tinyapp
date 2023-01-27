@@ -42,8 +42,9 @@ const urlDatabase = {
 
 
 app.get('/', (req, res) => {
-
-  res.send('Hello World!');
+  const userId = req.session["user_id"];
+  const templateVars = {user: users[userId]};
+  res.render('urls_jumbotron', templateVars);
 });
 
 app.get('/register', (req, res) => {
@@ -117,7 +118,7 @@ app.get("/urls", (req, res) => {
 
 app.post('/urls', (req, res) => {
   if (req.session.user_id) {
-    const longURL = `http://${req.body.longURL}`;
+    const longURL = req.body.longURL.startsWith('http://') ? req.body.longURL : `http://${req.body.longURL}`;
     const id = randomIDGenerate(6);
     urlDatabase[id] = {};
     urlDatabase[id]['longURL'] = longURL;
@@ -203,7 +204,7 @@ app.post('/urls/:id', (req, res) => {
     res.send('<html><h2>Sorry you have no permision of changing the URL. </h2></html>');
     return;
   }
-  const newURL = `http://${req.body.longURL}`;
+  const newURL = req.body.longURL.startsWith('http://') ? req.body.longURL : `http://${req.body.longURL}`;
   urlDatabase[id].userID = userID;
   urlDatabase[id].longURL = newURL;
   res.redirect(`/urls`);

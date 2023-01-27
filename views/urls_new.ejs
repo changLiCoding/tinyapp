@@ -19,24 +19,26 @@
   </head>
 
   <body>
-    <%- include('partials/_header') %>
-
-    <main style="margin: 1em;">
-      <h3>Create TinyURL</h3>
-      <form class="form-inline" action="/urls" method="POST">
-        <div class="form-group mb-2">
-          <label for="longURL">Enter a URL:</label>
-          <input
-            class="form-control"
-            type="text"
-            name="longURL"
-            placeholder="http://"
-            style="width: 300px; margin: 1em"
-          />
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-      </form>
-    </main>
+    <div class="d-flex flex-column min-vh-100">
+      <%- include('partials/_header') %>
+      <main class="flex-fill" style="margin: 1em;">
+        <h3>Create TinyURL</h3>
+        <form class="form-inline" action="/urls" method="POST">
+          <div class="form-group mb-2">
+            <label for="longURL">Enter a URL:</label>
+            <input
+              class="form-control"
+              type="text"
+              name="longURL"
+              placeholder="http://"
+              style="width: 300px; margin: 1em"
+            />
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </main>
+      <%- include('partials/_footer') %>
+    </div>
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

@@ -17,17 +17,18 @@
     <title>TinyApp</title>
   </head>
   <body>
-    <%- include('partials/_header') %>
-    <div class="container mt-3 container-sm">
-      <div class="container constainer-sm">
-        <div class="p-3 position-absolute top-50 start-50 translate-middle bg-danger text-white">
-          <p><%= msg %>   </p>
+    <div class="d-flex flex-column min-vh-100">
+      <%- include('partials/_header') %>
+      <main class="flex-fill">
+
+        <div class="container mt-3 container-sm">
+          <div class="h-100 d-flex align-items-center justify-content-center">
+              <span class="badge badge-pill badge-warning"><%= msg %> </span>
+          </div>
         </div>
-
-      </div>
-
+      </main>
+      <%- include('partials/_footer') %>
     </div>
-
         <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
